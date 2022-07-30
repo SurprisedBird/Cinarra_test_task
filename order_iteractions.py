@@ -9,7 +9,7 @@ def accept_order(_id, _driver_id):
         query.status = StatusEnum.IN_PROGRESS
         db.session.commit()
 
-    return query.status.value
+    return query
 
 def cancel_order(_id):
     query = Order.query.filter_by(id=_id).first()
@@ -17,7 +17,7 @@ def cancel_order(_id):
         query.status = StatusEnum.CANCELLED
         db.session.commit()
 
-    return query.status.value
+    return query
 
 def finish_order(_id):
     query = Order.query.filter_by(id=_id).first()
@@ -25,4 +25,4 @@ def finish_order(_id):
         query.status = StatusEnum.DONE
         db.session.commit()
 
-    return query.status.value
+    return query

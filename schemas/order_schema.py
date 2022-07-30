@@ -1,10 +1,18 @@
 add_order_schema = {
     "type": "object",
     "properties": {
-        "name": {"type": "string",
-                "minLength": 1},
-        "price" : {"type": "string",
-                "minLength": 1}
+        "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z\s]*$",
+            "minLength": 1,
+            "maxLength": 100,
+        },
+        "price" : {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1,
+            "maxLength": 5,
+        }
     },
     "required": ["name", "price"]
 }
@@ -13,18 +21,25 @@ add_order_schema = {
 search_order_by_client_schema = {
     "type": "object",
     "properties": {
-        "client_name": {"type": "string",
-        "minLength": 1}
+        "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z\s]*$",
+            "minLength": 1,
+            "maxLength": 100,
+        }
     },
-    "required": ["client_name"]
+    "required": ["name"]
 }
 
 
 search_order_by_id_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "string",
-        "minLength": 1}
+        "id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1,
+        }
     },
     "required": ["id"]
 }
@@ -32,16 +47,31 @@ search_order_by_id_schema = {
 change_order_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "string",
-        "minLength": 1},
-        "client_id": {"type": "string",
-        "minLength": 1},
-        "driver_id": {"type": "string",
-        "minLength": 1},
-        "created": {"type": "string",
-        "minLength": 1},
-        "price": {"type": "string",
-        "minLength": 1},
+        "id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1,
+        },
+        "client_id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1
+        },
+        "driver_id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1
+        },
+        "created": {
+            "type": "string",
+            "minLength": 1
+        },
+        "price": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1,
+            "maxLength": 5,
+        },
     },
     "required": ["id"]
 }
@@ -49,10 +79,16 @@ change_order_schema = {
 accept_order_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "string",
-        "minLength": 1},
-        "driver_id": {"type": "string",
-        "minLength": 1}
+        "id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1
+        },
+        "driver_id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1
+        }
     },
     "required": ["id", "driver_id"]
 }
@@ -60,8 +96,11 @@ accept_order_schema = {
 cancel_order_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "string",
-        "minLength": 1}
+        "id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1
+        }
     },
     "required": ["id"]
 }
@@ -69,8 +108,11 @@ cancel_order_schema = {
 finish_order_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "string",
-        "minLength": 1}
+        "id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1
+        }
     },
     "required": ["id"]
 }

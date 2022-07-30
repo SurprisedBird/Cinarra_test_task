@@ -1,10 +1,31 @@
 add_driver_schema = {
     "type": "object",
     "properties": {
-        "name": {"type": "string",
-                "minLength": 1},
-        "phone_number" : {"type": "string",
-                "minLength": 1}
+        "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z\s]*$",
+            "minLength": 1,
+            "maxLength": 100,
+        },
+        "phone_number" : {
+            "type": "string",
+            "pattern": "^[() \-\d+]*$",
+            "minLength": 1,
+            "maxLength": 20,
+        }
+    },
+    "required": ["name"]
+}
+
+search_driver_schema = {
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z\s]*$",
+            "minLength": 1,
+            "maxLength": 100,
+        }
     },
     "required": ["name"]
 }
@@ -12,19 +33,11 @@ add_driver_schema = {
 delete_driver_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "string",
-        "minLength": 1}
+        "id": {
+            "type": "string",
+            "pattern": "^\d+$",
+            "minLength": 1,
+        }
     },
     "required": ["id"]
 }
-
-search_driver_schema = {
-    "type": "object",
-    "properties": {
-        "name": {"type": "string",
-        "minLength": 1}
-    },
-    "required": ["name"]
-}
-
-
