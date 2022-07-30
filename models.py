@@ -1,3 +1,4 @@
+from email import message
 from config import db
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -20,8 +21,8 @@ class Client(db.Model):
     
     orders = relationship("Order")
 
-    def json(self):
-        return{'name': self.name}
+    def as_dict(self):
+        return {"id": self.id, "name": self.name, "phone_number": self.phone_number}
 
     @staticmethod
     def search_client(_name):
@@ -53,8 +54,11 @@ class Driver(db.Model):
     
     orders = relationship("Order")
 
+    def as_dict(self):
+        return {"id": self.id, "name": self.name, "car_number": self.car_number, "phone_number": self.phone_number}
+    
     @staticmethod
-    def add_driver(_name,_car_number, _phone_number):
+    def add_driver(_name, _car_number, _phone_number):
         driver = Driver(name=_name, car_number=_car_number, phone_number=_phone_number)
         db.session.add(driver)
         db.session.commit()
@@ -83,6 +87,9 @@ class Order(db.Model):
     price = db.Column(db.SmallInteger)
     status = db.Column(db.Enum(StatusEnum))
 
+    def as_dict(self):
+        return {"id": self.id, "created": self.created, "client_id": self.client_id, "driver_id": self.driver_id, "price": self.price, "status": self.status.value}
+    
     @staticmethod
     def add_order(_client_id, _price):
         order = Order(client_id=_client_id, price=_price, status=StatusEnum.NOT_ACCEPTED)
@@ -134,4 +141,4 @@ class Order(db.Model):
             result_change_message.append(change_message)
 
         db.session.commit()
-        return result_change_message
+        return ', '.join(str(message) for message in result_change_message)
