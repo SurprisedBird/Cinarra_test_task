@@ -43,6 +43,11 @@ class Client(db.Model):
         db.session.commit()
         return bool(is_successful)
 
+    @staticmethod
+    def clear_client_table():
+        Client.query.delete()
+        db.session.commit()
+
 
 class Driver(db.Model):
     __tablename__ = 'driver'
@@ -76,12 +81,16 @@ class Driver(db.Model):
         db.session.commit()
         return bool(is_successful)
 
+    @staticmethod
+    def clear_driver_table():
+        Driver.query.delete()
+        db.session.commit()
 
 class Order(db.Model):
     __tablename__ = 'order'
 
     id = db.Column(db.Integer, primary_key=True)
-    created = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    created = db.Column(db.String(100))
     client_id = db.Column(db.Integer, db.ForeignKey("client.id"))
     driver_id = db.Column(db.Integer, db.ForeignKey("driver.id"), nullable=True)
     price = db.Column(db.SmallInteger)
@@ -91,7 +100,8 @@ class Order(db.Model):
         return {"id": self.id, "created": self.created, "client_id": self.client_id, "driver_id": self.driver_id, "price": self.price, "status": self.status.value}
     
     @staticmethod
-    def add_order(_client_id, _price):
+    def add_order(_client_name, _price):
+        _client_id = Client.search_client(_client_name).id
         order = Order(client_id=_client_id, price=_price, status=StatusEnum.NOT_ACCEPTED)
         db.session.add(order)
         db.session.commit()
@@ -110,35 +120,43 @@ class Order(db.Model):
         return query
 
     @staticmethod
-    def change_order(_id, args):
+    def change_order(_id, _req_args):
         query = Order.query.filter_by(id=_id).first()
 
         can_be_changed = query.status is StatusEnum.NOT_ACCEPTED
         result_change_message = []
+
+        is_success = "success"
         
-        if 'client_id' in args and can_be_changed:
-            query.client_id = args['client_id']
+        if 'client_id' in _req_args and can_be_changed:
+            query.client_id = _req_args['client_id']
             change_message = "Client id is successefully changed"
             result_change_message.append(change_message)
 
-        if 'driver_id' in args and can_be_changed:
-            query.driver_id = args['driver_id']
+        if 'driver_id' in _req_args and can_be_changed:
+            query.driver_id = _req_args['driver_id']
             change_message = "Driver id is successefully changed"
             result_change_message.append(change_message)
 
-        if 'created' in args and can_be_changed:
-            query.created = args['created']
-            change_message = "Created date is successefully changed"
+        if 'created' in _req_args and can_be_changed:
+            query.created = _req_args['created']
+            change_message = "Order date is successefully changed"
             result_change_message.append(change_message)
 
-        if 'price' in args:
-            query.price = args['price']
-            change_message = "Price is successefully changed"
+        if 'price' in _req_args:
+            query.price = _req_args['price']
+            change_message = "Order price is successefully changed"
             result_change_message.append(change_message)
 
         if len(result_change_message) == 0:
             change_message = "Order was not changed"
             result_change_message.append(change_message)
+            is_success = "error"
 
         db.session.commit()
-        return ', '.join(str(message) for message in result_change_message)
+        return {is_success:', '.join(str(message) for message in result_change_message)}
+
+    @staticmethod
+    def clear_order_table():
+        Order.query.delete()
+        db.session.commit()
