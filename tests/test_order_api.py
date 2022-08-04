@@ -20,9 +20,10 @@ class TestOrderAPI:
     cl_id_v = 1
 
     # Valid driver properties
-    dr_test_name_v = "Any Driver"
+    dr_name_v = "Any Driver"
     dr_car_number_v = "AB0000YZ"
-    dr_test_phone_v = "+3 (099) 333-55-22"
+    dr_phone_v = "+3 (099) 333-55-22"
+    dr_id_v = 1
 
     # Valid order properties
     or_price_v = 100
@@ -186,8 +187,8 @@ class TestOrderAPI:
         second_client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert second_client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=first_client.name, _price=self.or_price_v)
@@ -241,8 +242,8 @@ class TestOrderAPI:
         second_client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert second_client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=first_client.name, _price=self.or_price_v)
@@ -266,7 +267,7 @@ class TestOrderAPI:
 
         Execute /change_order POST method with invalid client id, invalid driver_id, invalid order date and invalid order price
         Response code should be 200
-        Relevant success messages for each attribute with "error" key should be in response
+        Relevant error messages for each attribute with "error" key should be in response
         
         Execute /change_order POST method without any attributes
         "Order was not changed" message with "error" key should be in response      
@@ -275,8 +276,8 @@ class TestOrderAPI:
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
@@ -305,11 +306,21 @@ class TestOrderAPI:
         assert resp.json == {'error': 'Order was not changed'}
 
     def test_accept_order(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+
+        Execute /accept_order POST method with valid order id and valid driver id
+        Response code should be 200
+        "in_progress" status with "status" key should be in response     
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
@@ -320,46 +331,67 @@ class TestOrderAPI:
         assert resp.status_code == 200
         assert resp.json.get("status") == "in_progress"
 
-        order = Order.query.filter_by(id=1).first()
+        order = Order.query.filter_by(id=self.or_id_v).first()
         assert order.driver_id == 1
         assert order.status == StatusEnum.IN_PROGRESS
 
     def test_accept_order_negative(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+
+        Execute /accept_order POST method with invalid order id, invalid driver id, without order id and without driver id
+        Response code should be 200
+        Relevant error messages for each attribute with "error" key should be in response     
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
         assert order is not None
         assert order.status == StatusEnum.NOT_ACCEPTED
 
-        for id in self.ids_inv:
-            resp = self.client.post(f'/accept_order?id={id}&driver_id={1}')
+        for id_inv in self.ids_inv:
+            resp = self.client.post(f'/accept_order?id={id_inv}&driver_id={self.dr_id_v}')
             assert resp.status_code == 200
             assert resp.json.get("error") == "Order id is not valid"
 
-        for id in self.ids_inv:
-            resp = self.client.post(f'/accept_order?id={1}&driver_id={id}')
+        for id_inv in self.ids_inv:
+            resp = self.client.post(f'/accept_order?id={self.or_id_v}&driver_id={id_inv}')
             assert resp.status_code == 200
             assert resp.json.get("error") == "Driver id is not valid"
 
-        resp = self.client.post(f'/accept_order?&driver_id={1}')
+        resp = self.client.post(f'/accept_order?&driver_id={self.dr_id_v}')
         assert resp.status_code == 200
         assert resp.json.get("error") == "'id' is a required property"
 
-        resp = self.client.post(f'/accept_order?&id={1}')
+        resp = self.client.post(f'/accept_order?&id={self.or_id_v}')
         assert resp.status_code == 200
         assert resp.json.get("error") == "'driver_id' is a required property"
 
     def test_cancel_order_from_not_accepted(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+        Be sure order is not None and status is NOT_ACCEPTED
+
+        Execute /cancel_order POST method with valid order id
+        Response code should be 200
+        "cancelled" status with "status" key should be in response     
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
@@ -370,46 +402,72 @@ class TestOrderAPI:
         assert resp.status_code == 200
         assert resp.json.get("status") == "cancelled"
 
-        order = Order.query.filter_by(id=1).first()
+        order = Order.query.filter_by(id=self.or_id_v).first()
         assert order.status == StatusEnum.CANCELLED
 
     def test_cancel_order_from_in_progress(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+        Be sure order is not None and status is NOT_ACCEPTED
+
+        Execute /accept_order POST method with valid order id and valid driver id
+        Response code should be 200
+        Be sure order status is IN_PROGRESS
+
+        Execute /cancel_order POST method with valid order id
+        Response code should be 200
+        "cancelled" status with "status" key should be in response     
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
         assert order is not None
         assert order.status == StatusEnum.NOT_ACCEPTED
 
-        self.client.post(f'/accept_order?id={1}&driver_id={1}')
-        order = Order.query.filter_by(id=1).first()
+        self.client.post(f'/accept_order?id={self.or_id_v}&driver_id={self.dr_id_v}')
+        order = Order.query.filter_by(id=self.or_id_v).first()
         assert order.status == StatusEnum.IN_PROGRESS
 
         resp = self.client.post(f'/cancel_order?id={order.id}')
         assert resp.status_code == 200
         assert resp.json.get("status") == "cancelled"
 
-        order = Order.query.filter_by(id=1).first()
+        order = Order.query.filter_by(id=self.or_id_v).first()
         assert order.status == StatusEnum.CANCELLED
 
     def test_cancel_order_negative(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+        Be sure order is not None and status is NOT_ACCEPTED
+
+        Execute /cancel_order POST method with invalid order id
+        Response code should be 200
+        Relevant error messages for each attribute with "error" key should be in response 
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
         assert order is not None
         assert order.status == StatusEnum.NOT_ACCEPTED
 
-        for id in self.ids_inv:
-            resp = self.client.post(f'/cancel_order?id={id}')
+        for id_inv in self.ids_inv:
+            resp = self.client.post(f'/cancel_order?id={id_inv}')
             assert resp.status_code == 200
             assert resp.json.get("error") == "Order id is not valid"
         
@@ -418,11 +476,26 @@ class TestOrderAPI:
         assert resp.json.get("error") == "'id' is a required property"
 
     def test_finish_order(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+        Be sure order is not None and status is NOT_ACCEPTED
+
+        Execute /accept_order POST method with valid order id and valid driver id
+        Response code should be 200
+        Be sure order status is IN_PROGRESS
+
+        Execute /finish_order POST method with valid order id
+        Response code should be 200
+        "done" status with "status" key should be in response     
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
@@ -433,7 +506,7 @@ class TestOrderAPI:
         assert resp.status_code == 200
         assert resp.json.get("status") == "in_progress"
 
-        order = Order.query.filter_by(id=1).first()
+        order = Order.query.filter_by(id=self.or_id_v).first()
         assert order.driver_id == 1
         assert order.status == StatusEnum.IN_PROGRESS
 
@@ -441,16 +514,31 @@ class TestOrderAPI:
         assert resp.status_code == 200
         assert resp.json.get("status") == "done"
 
-        order = Order.query.filter_by(id=1).first()
+        order = Order.query.filter_by(id=self.or_id_v).first()
         assert order.driver_id == 1
         assert order.status == StatusEnum.DONE
 
-    def test_finish_order(self):
+    def test_finish_order_negative(self):
+        '''
+        Create client with valid name and phone number
+        Create driver with valid name, car number and phone number
+        Create order with valid client name and price
+        Be sure order is not None and status is NOT_ACCEPTED
+
+        Execute /accept_order POST method with valid order id and valid driver id
+        Response code should be 200
+        Be sure order status is IN_PROGRESS
+
+        Execute /finish_order POST method with invalid order id
+        Response code should be 200
+        Relevant error messages for each attribute with "error" key should be in response 
+        '''
+
         client = Client.add_client(_name=self.cl_name_v, _phone_number=self.cl_phone_v)
         assert client is not None
 
-        driver = Driver.add_driver(_name=self.dr_test_name_v, _car_number=self.dr_car_number_v,
-        _phone_number=self.dr_test_phone_v)
+        driver = Driver.add_driver(_name=self.dr_name_v, _car_number=self.dr_car_number_v,
+        _phone_number=self.dr_phone_v)
         assert driver is not None
 
         order = Order.add_order(_client_name=client.name, _price=self.or_price_v)
@@ -465,8 +553,8 @@ class TestOrderAPI:
         assert order.driver_id == 1
         assert order.status == StatusEnum.IN_PROGRESS
 
-        for id in self.ids_inv:
-            resp = self.client.post(f'/finish_order?id={id}')
+        for id_inv in self.ids_inv:
+            resp = self.client.post(f'/finish_order?id={id_inv}')
             assert resp.status_code == 200
             assert resp.json.get("error") == "Order id is not valid"
         
