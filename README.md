@@ -77,7 +77,7 @@ app.config['DEBUG'] = True
 ```
 
 
-##SWAGGER settings
+## SWAGGER settings
 
 ```
 SWAGGER_DOC_URL = '/swagger'
