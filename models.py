@@ -110,8 +110,11 @@ class Order(db.Model):
 
     @staticmethod
     def search_order_by_client(_client_name):
-        _client_id = Client.search_client(_client_name).id
-        query = Order.query.filter_by(client_id=_client_id).first()
+        client = Client.search_client(_client_name)
+        if client is None:
+            return client
+
+        query = Order.query.filter_by(client_id=client.id).first()
         return query
     
     @staticmethod
