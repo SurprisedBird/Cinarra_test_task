@@ -1,4 +1,5 @@
-from config import app
+from distutils.command.config import config
+from config import app, config_bp, create_db
 from models import *
 from flask import request, jsonify, Response, json
 import order_iteractions
@@ -7,12 +8,16 @@ from schemas.client_schema import *
 from schemas.driver_schema import *
 from schemas.order_schema import *
 
+app.register_blueprint(config_bp)
+create_db()
+
 def is_valid(request_data, schema):
     try:
         result = jsonschema.validate(request_data, schema)
         return result
     except jsonschema.exceptions.ValidationError as result:
-        return result
+        return result.schema["error_msg"] if "error_msg" in result.schema else result.message
+
 
 #client
 # -----------------------------------------------------------
@@ -22,14 +27,14 @@ def add_client():
     
     result = is_valid(request_data, add_client_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     name = request.args.get('name')
     phone_number = request.args.get('phone_number')
     client = Client.add_client(name, phone_number)
 
     if client is None:
-        return "Client is not added"
+        return {"error":"Client is not added"}
     else:
         return client.as_dict()
 
@@ -39,13 +44,13 @@ def search_client():
     
     result = is_valid(request_data, search_client_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     name = request.args.get('name')
     client = Client.search_client(name)
     
     if client is None:
-        return "Client is not found"
+        return {"error":"Client is not found"}
     else:
         return client.as_dict()
 
@@ -53,14 +58,14 @@ def search_client():
 def delete_client(id): 
     result = is_valid({"id": id}, delete_client_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     is_successful = Client.delete_client(id)
     
     if is_successful:
-        return "Client is successfuly deleted"
+        return {"success":"Client is successfuly deleted"}
     else:
-        return f"Client is not deleted or not existed"
+        return {"error":"Client is not deleted or not existed"}
 
 # -----------------------------------------------------------
 
@@ -73,7 +78,7 @@ def add_driver():
 
     result = is_valid(request_data, add_driver_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     name = request.args.get('name')
     car_number = request.args.get('car_number')
@@ -91,7 +96,7 @@ def search_driver():
 
     result = is_valid(request_data, search_driver_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     name = request.args.get('name')
     driver = Driver.search_driver(name)
@@ -105,14 +110,15 @@ def search_driver():
 def delete_driver(id):
     result = is_valid({"id": id}, delete_driver_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     is_successful = Driver.delete_driver(id)
 
     if is_successful:
-        return "Driver is successfuly deleted"
+        return {"success":"Driver is successfuly deleted"}
     else:
-        return f"Driver is not deleted or not existed"
+        return {"error":"Driver is not deleted or not existed"}
+
 
 # -----------------------------------------------------------
 
@@ -125,16 +131,12 @@ def add_order():
 
     result = is_valid(request_data, add_order_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
-    name = request.args.get('name')
+    client_name = request.args.get('client_name')
     price = request.args.get('price')
-    client = Client.search_client(name)
     
-    if client is None:
-        return "Order is not added. Client is not found."
-    
-    order = Order.add_order(_client_id=client.id, _price=price)
+    order = Order.add_order(_client_name=client_name, _price=price)
 
     if order is None:
         return "Order is not added"
@@ -147,7 +149,7 @@ def search_order_by_client():
 
     result = is_valid(request_data, search_order_by_client_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
 
     name = request.args.get('name')
     order = Order.search_order_by_client(name)
@@ -163,7 +165,7 @@ def search_order_by_id():
 
     result = is_valid(request_data, search_order_by_id_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
 
     id = request.args.get('id')
     order = Order.search_order_by_id(id)
@@ -179,7 +181,7 @@ def change_order():
 
     result = is_valid(request_data, change_order_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
 
     id = request.args.get('id')
     change_message = Order.change_order(id, request.args)
@@ -198,7 +200,7 @@ def accept_order():
 
     result = is_valid(request_data, accept_order_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
 
     id = request.args.get('id')
     driver_id = request.args.get('driver_id')
@@ -215,7 +217,7 @@ def cancel_order():
 
     result = is_valid(request_data, cancel_order_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     id = request.args.get('id')
     order = order_iteractions.cancel_order(id)
@@ -231,7 +233,7 @@ def finish_order():
 
     result = is_valid(request_data, finish_order_schema)
     if result is not None:
-        return str(result)
+        return {"error":result}
     
     id = request.args.get('id')
     order = order_iteractions.finish_order(id)
