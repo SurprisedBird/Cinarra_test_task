@@ -1,0 +1,397 @@
+swagger: "2.0"
+info:
+  description: This is the swagger specs for this flask-api project
+  version: "1.0.0"
+  title: Flask Api
+consumes:
+  - application/json
+produces:
+  - application/json
+
+#basePath: /
+
+# Paths supported by this application
+paths:
+  /createdb:
+    get:
+      operationId: config.create_db
+      tags:
+      - db-helper
+      summary: Creates a database per config settings
+      description: Creates a database per config settings
+      responses:
+        200:
+          description: Creates a database per config settings
+
+  /add_client:
+    post:
+      operationId: app.create_client
+      tags:
+        - client
+      summary: Create new client
+      description: Creates client record in db
+      parameters:
+        - name: name
+          in: query
+          description: client name to create
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: phone_number
+          in: query
+          description: phone number to create
+          required: false
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+      responses:
+        200:
+          description: Sucessfully create client
+        404:
+          description: Client was not created
+
+  /search_client:
+    get:
+      operationId: app.search_client
+      tags:
+        - client
+      summary: Search client
+      description: Search client by name
+      parameters:
+        - name: name
+          in: query
+          description: client name to search
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully display client
+        404:
+          description: Client was not found
+    
+  /delete_client/{id}:
+    delete:
+      operationId: app.delete_client
+      tags:
+        - client
+      summary: Delete client
+      description: Delete a single client by id
+      parameters:
+        - name: id
+          in: path
+          description: client id to delete client
+          type: string
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+      responses:
+        204:
+          description: Sucessfully deleted client
+        404:
+          description: Client was not found
+
+  /add_driver:
+    post:
+      operationId: app.create_driver
+      tags:
+        - driver
+      summary: Create new driver
+      description: Creates driver record in db
+      parameters:
+        - name: name
+          in: query
+          description: Driver name to create
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: phone_number
+          in: query
+          description: phone number to create
+          required: false
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+        - name: car_number
+          in: query
+          description: car number to create
+          required: true
+          schema:
+            type: object
+            properties:
+              car_number:
+                type: string
+      responses:
+        200:
+          description: Sucessfully create driver
+        404:
+          description: Driver was not created
+
+  /search_driver:
+    get:
+      operationId: app.search_driver
+      tags:
+        - driver
+      summary: Search driver
+      description: Search driver by name
+      parameters:
+        - name: name
+          in: query
+          description: Driver name to search
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully display driver
+        404:
+          description: Driver was not found
+    
+  /delete_driver/{id}:
+    delete:
+      operationId: app.delete_driver
+      tags:
+        - driver
+      summary: Delete driver
+      description: Delete a single driver by id
+      parameters:
+        - name: id
+          in: path
+          description: Driver id to delete driver
+          type: string
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+      responses:
+        204:
+          description: Sucessfully deleted driver
+        404:
+          description: Driver was not found
+
+  /add_order:
+    post:
+      operationId: app.create_order
+      tags:
+        - order
+      summary: Create new order
+      description: Creates order record in db
+      parameters:
+        - name: client_name
+          in: query
+          description: name of the ordering client 
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: price
+          in: query
+          description: order price
+          required: true
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+      responses:
+        200:
+          description: Sucessfully create order
+        404:
+          description: Order was not created
+
+  /search_order_by_client:
+    get:
+      operationId: app.search_order_by_client
+      tags:
+        - order
+      summary: Search order
+      description: Search order by client name
+      parameters:
+        - name: name
+          in: query
+          description: Order name to search
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully display order
+        404:
+          description: Order was not found
+
+  /search_order_by_id:
+    get:
+      operationId: app.search_order_by_id
+      tags:
+        - order
+      summary: Search order
+      description: Search order by order id
+      parameters:
+        - name: id
+          in: query
+          description: Order id to search
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully display order
+        404:
+          description: Order was not found
+
+  /change_order:
+    post:
+      operationId: app.change_order
+      tags:
+        - order
+      summary: Change existed order
+      description: Changes order record in db
+      parameters:
+        - name: id
+          in: query
+          description: order id
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: client_id
+          in: query
+          description: id of the ordering client 
+          required: false
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: driver_id
+          in: query
+          description: id of the ordering driver 
+          required: false
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: price
+          in: query
+          description: order price
+          required: false
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+      responses:
+        200:
+          description: Sucessfully changed order
+        404:
+          description: Order was not changed
+          
+  /accept_order:
+    post:
+      operationId: app.accept_order
+      tags:
+        - order
+      summary: Accept order by driver
+      description: Change order status from "not_acceptet" to "in_progress"
+      parameters:
+        - name: id
+          in: query
+          description: order id
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+        - name: driver_id
+          in: query
+          description: id of the driver, who accept the order
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully accept order
+        404:
+          description: Order was not accepted
+
+  /cancel_order:
+    post:
+      operationId: app.cancel_order
+      tags:
+        - order
+      summary: Cancel order by client or driver
+      description: Change order status from "in_progress" to "cancelled"
+      parameters:
+        - name: id
+          in: query
+          description: order id
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully cancel order
+        404:
+          description: Order was not canceled
+
+  /finish_order:
+    post:
+      operationId: app.finish_order
+      tags:
+        - order
+      summary: Finish order
+      description: Change order status from "in_progress" to "done"
+      parameters:
+        - name: id
+          in: query
+          description: order id
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: Sucessfully finished order
+        404:
+          description: Order was not finished
